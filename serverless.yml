@@ -59,7 +59,15 @@ functions:
           rules:
             - prefix: uploads/
             - suffix: .jpg
-
+  thumbnails:
+    handler: handler.thumbnails
+    events:
+      - s3:
+          bucket: learning-serverless-resizer-service-images
+          event: s3:ObjectCreated:*
+          rules:
+            - prefix: thumbnails/
+            - suffix: .jpg
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
