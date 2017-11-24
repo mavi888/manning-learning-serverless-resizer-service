@@ -17,6 +17,10 @@ plugins:
   - serverless-step-functions
   - serverless-pseudo-parameters
 
+custom:
+  settings:
+    IMAGES_DYNAMODB_TABLE: images-metadata
+
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
 # frameworkVersion: "=X.X.X"
@@ -26,6 +30,7 @@ provider:
   runtime: nodejs6.10
   profile: student1
   region: us-east-1 #N.Virginia
+  environment: ${self:custom.settings}
 
 # you can overwrite defaults here
 #  stage: dev
@@ -44,6 +49,15 @@ provider:
         - "states:ListStateMachines"
         - "states:StartExecution"
       Resource: "arn:aws:states:*:*:*"
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:Scan"
+        - "dynamodb:GetItem"
+        - "dynamodb:PutItem"
+        - "dynamodb:UpdateItem"
+        - "dynamodb:DeleteItem"
+      Resource:
+        - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.settings.IMAGES_DYNAMODB_TABLE}"
 # you can define service wide environment variables here
 #  environment:
 #    variable1: value1
@@ -148,14 +162,18 @@ stepFunctions:
 #    environment:
 #      variable2: value2
 
-# you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"
+resources:
+  Resources:
+    ImagesTable:
+      Type: "AWS::DynamoDB::Table"
+      Properties:
+        AttributeDefinitions:
+        - AttributeName: "imageId"
+          AttributeType: "S"
+        KeySchema:
+        - AttributeName: "imageId"
+          KeyType: "HASH"
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:custom.settings.IMAGES_DYNAMODB_TABLE}
