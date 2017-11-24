@@ -4,6 +4,7 @@ const AWS = require('aws-sdk');
 const stepfunctions = new AWS.StepFunctions();
 
 const resizer = require('./resizer');
+const imageMetadataManager = require('./imageMetadataManager');
 
 module.exports.resizer = (event, context, callback) => {
   console.log(event);
@@ -31,7 +32,17 @@ module.exports.saveImageMetadata = (event, context, callback) => {
   const key = event.objectKey;
 
   console.log('saveImageMetadata was called');
-  // TODO
+
+  imageMetadataManager
+    .saveImageMetadata(bucket, key, false)
+    .then(() => {
+      console.log('Save image metadata was completed');
+      callback(null, null);
+    })
+    .catch(error => {
+      console.log(error);
+      callback(null, null);
+    });
 };
 
 module.exports.blackAndWhiteCrop = (event, context, callback) => {
