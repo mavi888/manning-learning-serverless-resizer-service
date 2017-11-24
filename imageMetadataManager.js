@@ -35,6 +35,16 @@ module.exports.saveImageMetadata = (bucket, key, isAThumbnail) => {
   return dynamo.put(params).promise();
 };
 
+module.exports.updateImageMetadata = (thumbnailKey, thumbnailImageId) => {
+  console.log('saveImageMetadata');
+
+  return getImage(getFileName(thumbnailKey, false)).then(image => {
+    const newThumbnails = image.thumbnails;
+    newThumbnails.push(thumbnailImageId);
+    return updateImage(image.imageId, newThumbnails);
+  });
+};
+
 function getImage(imageId) {
   const params = {
     Key: {

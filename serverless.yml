@@ -56,6 +56,7 @@ provider:
         - "dynamodb:PutItem"
         - "dynamodb:UpdateItem"
         - "dynamodb:DeleteItem"
+        - "dynamodb:ListStreams"
       Resource:
         - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.settings.IMAGES_DYNAMODB_TABLE}"
 # you can define service wide environment variables here
@@ -96,6 +97,17 @@ functions:
           rules:
             - prefix: thumbnails/
             - suffix: .jpg
+  updateImageMetadata:
+    handler: handler.updateImageMetadata
+    events:
+       - stream:
+          type: dynamodb
+          batchSize: 1
+          startingPosition: LATEST
+          arn:
+            Fn::GetAtt:
+              - ImagesTable
+              - StreamArn
 
 stepFunctions:
   stateMachines:
@@ -177,3 +189,5 @@ resources:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
         TableName: ${self:custom.settings.IMAGES_DYNAMODB_TABLE}
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE

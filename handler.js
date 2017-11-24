@@ -118,3 +118,23 @@ module.exports.executeStepFunction = (event, context, callback) => {
       return context.fail(error);
     });
 };
+
+module.exports.updateImageMetadata = (event, context, callback) => {
+  console.log('updateImageMetadata');
+
+  const eventData = event.Records[0];
+  console.log(eventData);
+
+  if (eventData.eventName === 'INSERT') {
+    if (eventData.dynamodb.NewImage.isAThumbnail.BOOL) {
+      const image = eventData.dynamodb.NewImage;
+
+      // if it is a thumbnail then we need to find the image and update the thumbnail ids
+      imageMetadataManager.updateImageMetadata(image.key.S, image.imageId.S).then(() => {
+        console.log('Image updated');
+        callback(null, null);
+      });
+    }
+  }
+  callback(null, null);
+};
