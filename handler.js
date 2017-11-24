@@ -70,8 +70,16 @@ module.exports.thumbnails = (event, context, callback) => {
   console.log(bucket);
   console.log(key);
 
-  console.log(`A new file ${key} was created in the bucket ${bucket}`);
-  callback(null, { message: `A new file ${key} was created in the bucket ${bucket}` });
+  imageMetadataManager
+    .saveImageMetadata(bucket, key, true)
+    .then(() => {
+      console.log('Save thumbnail metadata was completed');
+      callback(null, null);
+    })
+    .catch(error => {
+      console.log(error);
+      callback(null, null);
+    });
 };
 
 module.exports.executeStepFunction = (event, context, callback) => {

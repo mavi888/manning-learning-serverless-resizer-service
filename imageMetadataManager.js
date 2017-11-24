@@ -84,6 +84,10 @@ function getFileName(key, isAThumbnail) {
     fileName = fileName + '_thumbnail'; // if we have different sizes of thumbnails we can store them with different names in the resize method
   }
 
+  if (!isAThumbnail && fileName.indexOf('crop_') >= 0) {
+    fileName = fileName.replace('crop_', '');
+  }
+
   console.log(fileName);
   return fileName;
 }
