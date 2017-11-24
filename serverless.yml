@@ -71,6 +71,8 @@ functions:
     handler: handler.resizer
   saveImageMetadata:
     handler: handler.saveImageMetadata
+  blackAndWhiteCrop:
+    handler: handler.blackAndWhiteCrop
   thumbnails:
     handler: handler.thumbnails
     events:
@@ -103,6 +105,12 @@ stepFunctions:
                   SaveImageMetadata:
                     Type: Task
                     Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-saveImageMetadata
+                    End: true
+              - StartAt: BlackAndWhiteCrop
+                States:
+                  BlackAndWhiteCrop:
+                    Type: Task
+                    Resource: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-blackAndWhiteCrop
                     End: true
           FinalState: # Final state name
             Type: Pass

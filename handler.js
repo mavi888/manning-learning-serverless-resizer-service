@@ -12,7 +12,8 @@ module.exports.resizer = (event, context, callback) => {
   const key = event.objectKey;
   console.log(`A file named ${key} was put in a bucket ${bucket}`);
 
-  resizer(bucket, key)
+  resizer
+    .resize(bucket, key)
     .then(() => {
       console.log(`The thumbnail was created`);
       callback(null, { message: 'The thumbnail was created' });
@@ -31,6 +32,24 @@ module.exports.saveImageMetadata = (event, context, callback) => {
 
   console.log('saveImageMetadata was called');
   // TODO
+};
+
+module.exports.blackAndWhiteCrop = (event, context, callback) => {
+  console.log(event);
+
+  const bucket = event.bucketName;
+  const key = event.objectKey;
+
+  resizer
+    .blackAndWhiteCrop(bucket, key)
+    .then(url => {
+      console.log('The thumbnail was created');
+      callback(null, { message: 'The thumbnail was created' });
+    })
+    .catch(error => {
+      console.log(error);
+      callback(null, { message: `There was an error: ${error}` });
+    });
 };
 
 module.exports.thumbnails = (event, context, callback) => {
