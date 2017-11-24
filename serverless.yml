@@ -39,7 +39,11 @@ provider:
         - "s3:GetObject"
         - "s3:PutObject"
       Resource: "arn:aws:s3:::learning-serverless-resizer-service-images/*"
-
+    - Effect: "Allow"
+      Action:
+        - "states:ListStateMachines"
+        - "states:StartExecution"
+      Resource: "arn:aws:states:*:*:*"
 # you can define service wide environment variables here
 #  environment:
 #    variable1: value1
