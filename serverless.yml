@@ -31,6 +31,16 @@ provider:
   profile: student1
   region: us-east-1 #N.Virginia
   environment: ${self:custom.settings}
+  apiKeys:
+    - learning-serverless-api-key
+  usagePlan:
+    quota:
+      limit: 10
+      offset: 0
+      period: DAY
+    throttle:
+      burstLimit: 10
+      rateLimit: 10
 
 # you can overwrite defaults here
 #  stage: dev
@@ -120,6 +130,13 @@ functions:
       - http:
           path: thumbnail/{imageId}
           method: get
+  generateToken:
+    handler: authorizationHandler.generateToken
+    events:
+      - http:
+          path: register
+          method: post
+          private: true
 
 stepFunctions:
   stateMachines:
