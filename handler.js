@@ -138,3 +138,17 @@ module.exports.updateImageMetadata = (event, context, callback) => {
   }
   callback(null, null);
 };
+
+module.exports.getImageMetadata = (event, context, callback) => {
+  console.log('getImageMetadata was called');
+
+  console.log(event);
+  const response = {
+    statusCode: 200,
+    body: JSON.stringify({
+      message: 'Get Image Metadata was called'
+    })
+  };
+
+  callback(null, response);
+};
