@@ -141,14 +141,20 @@ module.exports.updateImageMetadata = (event, context, callback) => {
 
 module.exports.getImageMetadata = (event, context, callback) => {
   console.log('getImageMetadata was called');
-
   console.log(event);
-  const response = {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: 'Get Image Metadata was called'
-    })
-  };
 
-  callback(null, response);
+  const imageId = event.pathParameters && event.pathParameters.imageId;
+
+  imageMetadataManager
+    .getImageMetadata(imageId)
+    .then(imageMetadata => sendResponse(200, { message: imageMetadata }, callback))
+    .catch(error => sendResponse(400, { message: 'There was an error when fetching the metadata' }, callback));
 };
+
+function sendResponse(statusCode, message, callback) {
+  const response = {
+    statusCode: statusCode,
+    body: JSON.stringify(message)
+  };
+  callback(null, response);
+}

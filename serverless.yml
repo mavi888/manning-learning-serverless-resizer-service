@@ -112,7 +112,7 @@ functions:
     handler: handler.getImageMetadata
     events:
       - http:
-          path: image/
+          path: image/{imageId}
           method: get
 
 
