@@ -1,34 +1,43 @@
 'use strict';
 
 const jwt = require('jsonwebtoken');
+const AWS = require('aws-sdk');
+const dynamo = new AWS.DynamoDB.DocumentClient();
+const S3 = new AWS.S3();
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
-const APPLICATION_ID = 'myImageResizerId';
-const APPLICATION_SECRET = 'myImageResizerSecret';
-
 module.exports.generateToken = jsonToSign => {
-  const hasValidId = jsonToSign.applicationId && jsonToSign.applicationId === APPLICATION_ID;
+  const hasValidId = jsonToSign !== null && jsonToSign.applicationId;
 
-  const hasValidSecret = jsonToSign.applicationSecret && jsonToSign.applicationSecret === APPLICATION_SECRET;
+  if (hasValidId) {
+    return getApplication(jsonToSign.applicationId)
+      .then(application => {
+        const hasValidSecret = jsonToSign.applicationSecret && jsonToSign.applicationSecret === application.applicationSecret;
 
-  if (hasValidId && hasValidSecret) {
-    // sign with default (HMAC SHA256)
-    return jwt.sign(jsonToSign, SECRET_KEY);
+        if (hasValidSecret) {
+          return jwt.sign(jsonToSign, SECRET_KEY);
+        } else {
+          throw new Error();
+        }
+      })
+      .catch(error => {
+        throw new Error('Invalid applicationId or secret');
+      });
   } else {
-    throw new Error('Invalid token or applicationId');
+    throw new Error('Invalid request');
   }
 };
 
 module.exports.generatePolicy = (token, methodArn) => {
   try {
-    if (decodeToken(token) != null) {
-      //Token was decoded successfully
-      return buildPolicy('user', 'Allow', methodArn);
-    } else {
-      //Token is not decoded properly
-      throw new Error('Unauthorized');
-    }
+    return decodeToken(token)
+      .then(decoded => {
+        return buildPolicy('user', 'Allow', methodArn);
+      })
+      .catch(error => {
+        throw new Error('Unauthorized');
+      });
   } catch (error) {
     throw new Error('Unauthorized');
   }
@@ -37,19 +46,30 @@ module.exports.generatePolicy = (token, methodArn) => {
 function decodeToken(token) {
   try {
     var decoded = jwt.verify(token, SECRET_KEY);
-    const hasValidAppId = decoded.applicationId && decoded.applicationId === APPLICATION_ID;
 
-    const hasValidSecret = decoded.applicationSecret && decoded.applicationSecret === APPLICATION_SECRET;
+    return getApplication(decoded.applicationId).then(application => {
+      var hasValidSecret = decoded.applicationSecret && decoded.applicationSecret === application.applicationSecret;
 
-    if (hasValidAppId && hasValidSecret) {
-      return decoded;
-    } else {
-      return null;
-    }
+      if (hasValidSecret) {
+        // sign with default (HMAC SHA256)
+        return decoded;
+      } else {
+        throw new Error();
+      }
+    });
   } catch (error) {
     return null;
   }
 }
+
+module.exports.createApplication = applicationJson => {
+  const params = {
+    TableName: process.env.APPLICATION_DYNAMODB_TABLE,
+    Item: applicationJson
+  };
+
+  return dynamo.put(params).promise();
+};
 
 function buildPolicy(principalId, effect, resource) {
   var authResponse = {};
@@ -69,4 +89,23 @@ function buildPolicy(principalId, effect, resource) {
     authResponse.policyDocument = policyDocument;
   }
   return authResponse;
+}
+
+function getApplication(applicationId) {
+  const params = {
+    Key: {
+      applicationId: applicationId
+    },
+    TableName: process.env.APPLICATION_DYNAMODB_TABLE
+  };
+
+  return dynamo
+    .get(params)
+    .promise()
+    .then(response => {
+      return response.Item;
+    })
+    .catch(error => {
+      throw new Error('There was a problem fetching the item from Dynamo');
+    });
 }

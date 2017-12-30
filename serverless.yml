@@ -20,6 +20,7 @@ plugins:
 custom:
   settings:
     IMAGES_DYNAMODB_TABLE: images-metadata
+    APPLICATION_DYNAMODB_TABLE: applications-table
     SECRET_KEY: ${ssm:learning-serverless-secret-token}
 
 # You can pin your service to only deploy with a specific Serverless version
@@ -70,6 +71,13 @@ provider:
         - "dynamodb:ListStreams"
       Resource:
         - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.settings.IMAGES_DYNAMODB_TABLE}"
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:GetItem"
+        - "dynamodb:PutItem"
+      Resource:
+        - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.settings.APPLICATION_DYNAMODB_TABLE}"
+
 # you can define service wide environment variables here
 #  environment:
 #    variable1: value1
@@ -142,6 +150,12 @@ functions:
           private: true
   authorize:
     handler: authorizationHandler.authorize
+  createApplication:
+    handler: authorizationHandler.createApplication
+    events:
+      - http:
+          path: application
+          method: post
 
 stepFunctions:
   stateMachines:
@@ -225,3 +239,16 @@ resources:
         TableName: ${self:custom.settings.IMAGES_DYNAMODB_TABLE}
         StreamSpecification:
           StreamViewType: NEW_IMAGE
+    ApplicationsTable:
+      Type: "AWS::DynamoDB::Table"
+      Properties:
+        AttributeDefinitions:
+        - AttributeName: "applicationId"
+          AttributeType: "S"
+        KeySchema:
+        - AttributeName: "applicationId"
+          KeyType: "HASH"
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:custom.settings.APPLICATION_DYNAMODB_TABLE}
