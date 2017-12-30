@@ -132,6 +132,7 @@ functions:
       - http:
           path: thumbnail/{imageId}
           method: get
+          authorizer: authorize
   generateToken:
     handler: authorizationHandler.generateToken
     events:
