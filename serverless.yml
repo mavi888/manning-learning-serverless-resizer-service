@@ -114,7 +114,12 @@ functions:
       - http:
           path: image/{imageId}
           method: get
-
+  getThumbnailMetadata:
+    handler: handler.getThumbnailMetadata
+    events:
+      - http:
+          path: thumbnail/{imageId}
+          method: get
 
 stepFunctions:
   stateMachines:

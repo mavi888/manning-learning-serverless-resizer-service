@@ -151,6 +151,17 @@ module.exports.getImageMetadata = (event, context, callback) => {
     .catch(error => sendResponse(400, { message: 'There was an error when fetching the metadata' }, callback));
 };
 
+module.exports.getThumbnailMetadata = (event, context, callback) => {
+  console.log('getThumbnailMetadata was called');
+
+  const imageId = event.pathParameters && event.pathParameters.imageId;
+
+  imageMetadataManager
+    .getThumbnailForImage(imageId)
+    .then(thumbnailMetadata => sendResponse(200, { message: thumbnailMetadata }, callback))
+    .catch(error => sendResponse(400, { message: 'There was an error when fetching the thumbnail metadata' }, callback));
+};
+
 function sendResponse(statusCode, message, callback) {
   const response = {
     statusCode: statusCode,
