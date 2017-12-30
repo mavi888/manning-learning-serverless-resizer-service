@@ -36,7 +36,7 @@ provider:
     - learning-serverless-api-key
   usagePlan:
     quota:
-      limit: 10
+      limit: 1000
       offset: 0
       period: DAY
     throttle:
@@ -125,6 +125,7 @@ functions:
       - http:
           path: image/{imageId}
           method: get
+          authorizer: authorize
   getThumbnailMetadata:
     handler: handler.getThumbnailMetadata
     events:
@@ -138,6 +139,8 @@ functions:
           path: register
           method: post
           private: true
+  authorize:
+    handler: authorizationHandler.authorize
 
 stepFunctions:
   stateMachines:

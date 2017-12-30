@@ -12,6 +12,16 @@ module.exports.generateToken = (event, context, callback) => {
   }
 };
 
+module.exports.authorize = (event, context, callback) => {
+  console.log(event);
+  try {
+    const policy = authorizer.generatePolicy(event.authorizationToken, event.methodArn);
+    callback(null, policy);
+  } catch (error) {
+    callback(error.message);
+  }
+};
+
 function sendResponse(statusCode, message, callback) {
   const response = {
     statusCode: statusCode,
