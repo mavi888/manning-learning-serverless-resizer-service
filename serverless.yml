@@ -20,6 +20,7 @@ plugins:
 custom:
   settings:
     IMAGES_DYNAMODB_TABLE: images-metadata
+    SECRET_KEY: ${ssm:learning-serverless-secret-token}
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details

@@ -2,7 +2,7 @@
 
 const jwt = require('jsonwebtoken');
 
-const SECRET_KEY = 'mySuperSecretKey!';
+const SECRET_KEY = process.env.SECRET_KEY;
 
 const APPLICATION_ID = 'myImageResizerId';
 const APPLICATION_SECRET = 'myImageResizerSecret';
